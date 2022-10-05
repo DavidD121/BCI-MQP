@@ -1,0 +1,26 @@
+{
+  "name": "BCI",
+  "description": "Cognitive man",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "permissions": ["storage", "alarms", "activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "/images/sleepy.png",
+      "32": "/images/sleepy.png",
+      "48": "/images/sleepy.png",
+      "128": "/images/sleepy.png"
+    }
+  },
+  "icons": {
+    "16": "/images/sleepy.png",
+    "32": "/images/sleepy.png",
+    "48": "/images/sleepy.png",
+    "128": "/images/sleepy.png"
+  }
+}

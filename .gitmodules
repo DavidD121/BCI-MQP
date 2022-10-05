@@ -1,0 +1,3 @@
+[submodule "NeuroLearn"]
+	path = NeuroLearn
+	url = https://github.com/WPIHCILab/NeuroLearn.git
