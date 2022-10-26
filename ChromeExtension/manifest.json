@@ -8,6 +8,12 @@
   },
   "options_page": "options.html",
   "permissions": ["storage", "alarms", "activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.assistments.org/assistments/student/*"],
+      "js": ["problem-page.js"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
