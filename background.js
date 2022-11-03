@@ -39,10 +39,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
     sendReponse({message: "value", value:val});
 
   if (sender.tab) {
-    console.log("Problem ID: " + msg.ID);
-    params= {
-      id: msg.ID
-    };
+
+    console.log("Params: " + msg);
+    params = msg
 
     options = {
       method: "POST", 
@@ -52,7 +51,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
       }
     };
 
-    fetch('http://127.0.0.1:5000/problem/', options).then((res) => {
+    const apiURL = "http://127.0.0.1:5000"
+    let requestURL = "";
+
+    if("step_id" in params) {
+      requestURL = apiURL + "/Step"
+    } else {
+      requestURL = apiURL + "/ProblemStart"
+    }
+
+    fetch(requestURL, options).then((res) => {
       if(res.ok) {
         return res.json();
       }
@@ -60,11 +68,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
     })
     .then((data) => {
       console.log(data);
-      val = data.value;
+      sendReponse({farewell: "thx bro"});
     })
     .catch((error) =>{
       console.log(error);
     });
-    sendReponse({farewell: "thx bro"});
   }
 });
