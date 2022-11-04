@@ -5,16 +5,16 @@ function readProblem() {
     return false;
   } else {
     const idArray = Array.from(problemElements, problemElements => problemElements.textContent);
-    const problemID = idArray.findLast(id => !id.includes('-'));
-    const stepID = idArray.findLast(id => id.includes('-'));
+    const problemID = idArray.findLast();
 
-    let problemData = {
-      problem_id: problemID,
-    };
 
-    if (stepID) {
-      problemData["step_id"] = stepID;
-    } 
+    let problemData = {};
+
+    if (id.includes('-')) {
+      problemData["step_id"] = problemID;
+    } else {
+      problemData["problem_id"] = problemID
+    }
     
     chrome.runtime.sendMessage(problemData, function(response) {
       console.log(response.farewell);
