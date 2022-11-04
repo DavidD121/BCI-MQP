@@ -1,3 +1,5 @@
+let currentProblemID = ''
+
 // Reads problem ID, if the problem has been proken into steps, get the current step ID as well
 function readProblem() {
   const problemElements = document.getElementsByClassName("GOBIPLGDDM");
@@ -5,15 +7,18 @@ function readProblem() {
     return false;
   } else {
     const idArray = Array.from(problemElements, problemElements => problemElements.textContent);
-    const problemID = idArray.findLast();
-
+    const problemID = idArray.pop();
+    console.log(problemID);
+    currentProblemID = problemID;
 
     let problemData = {};
 
-    if (id.includes('-')) {
+    if (problemID.includes('-')) {
+      problemData["type"] = "step"
       problemData["step_id"] = problemID;
     } else {
-      problemData["problem_id"] = problemID
+      problemData["type"] = "start"
+      problemData["problem_id"] = problemID;
     }
     
     chrome.runtime.sendMessage(problemData, function(response) {
@@ -22,13 +27,36 @@ function readProblem() {
   }
 }
 
-const callback = (mutationList, observer) => {
-  console.log(mutationList);
+const submitHandler = () => {
+  console.log('clicked');
+  const data = {
+    "type": "submit", 
+    "problem_id": currentProblemID
+  };
+
+  chrome.runtime.sendMessage(data, function(response) {
+    console.log(response.farewell);
+  });
+}
+
+const newProblemCallback = (mutationList, observer) => {
   for (const mutation of mutationList) {
     for (const node of mutation.addedNodes){
-      console.log(node);
       if(node.className == "GOBIPLGDPI") {
-        readProblem()
+        readProblem();
+        
+        const buttons = Array.from(document.getElementsByClassName("GOBIPLGDEL"));
+        const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
+
+        const inputBox = Array.from(document.getElementsByClassName("gwt-TextBox")).pop();
+        currentSubmitButton.addEventListener('click', submitHandler);
+
+        inputBox.addEventListener("keypress", function(event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            currentSubmitButton.click();
+          }
+        });
       }
     }
   }
@@ -46,7 +74,7 @@ const timer = setInterval(() => {
     console.log(targetNode);
     const config = {childList: true, subtree: true };
 
-    const observer = new MutationObserver(callback);
+    const observer = new MutationObserver(newProblemCallback);
     observer.observe(targetNode, config);
   }
 }, 150);

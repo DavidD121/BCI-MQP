@@ -9,29 +9,29 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name == "getData") {
-    console.log('fetching');
-    fetch('http://127.0.0.1:5000/rnd').then((res) => {
-      if(res.ok) {
-        return res.json();
-      }
-      throw new Error("Error fetching value");
-    })
-    .then((data) => {
-      console.log(data);
-      val = data.value;
-    })
-    .catch((error) =>{
-      console.log(error);
-    });
-  } else if (alarm.name = "updatePopup") {
-    if (val < 0.5) {
-      chrome.action.setIcon({ path: "/images/sleepy-32.png" });
-    } else {
-      chrome.action.setIcon({ path: "/images/smile-32.png" });
+  // if (alarm.name == "getData") {
+  //   console.log('fetching');
+  //   fetch('http://127.0.0.1:5000/rnd').then((res) => {
+  //     if(res.ok) {
+  //       return res.json();
+  //     }
+  //     throw new Error("Error fetching value");
+  //   })
+  //   .then((data) => {
+  //     console.log(data);
+  //     val = data.value;
+  //   })
+  //   .catch((error) =>{
+  //     console.log(error);
+  //   });
+  // } else if (alarm.name = "updatePopup") {
+  //   if (val < 0.5) {
+  //     chrome.action.setIcon({ path: "/images/sleepy-32.png" });
+  //   } else {
+  //     chrome.action.setIcon({ path: "/images/smile-32.png" });
 
-    }
-  }
+  //   }
+  // }
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
@@ -40,8 +40,27 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
 
   if (sender.tab) {
 
-    console.log("Params: " + msg);
-    params = msg
+    console.log("message: " + msg);
+
+    const apiURL = "http://127.0.0.1:5000"
+    let requestURL = "";
+
+    switch(msg["type"]) {
+      case "start":
+        requestURL = apiURL + "/ProblemStart";
+        break;
+      case "step":
+        requestURL = apiURL + "/Step";
+        break;
+      case "submit":
+        requestURL = apiURL + "/ProblemSubmit";
+        break;
+      default:
+        requestURL = apiURL;
+    }
+
+    delete msg["type"];
+    params = msg;
 
     options = {
       method: "POST", 
@@ -50,15 +69,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
         'Content-type': 'application/json; charset=UTF-8'
       }
     };
-
-    const apiURL = "http://127.0.0.1:5000"
-    let requestURL = "";
-
-    if("step_id" in params) {
-      requestURL = apiURL + "/Step"
-    } else {
-      requestURL = apiURL + "/ProblemStart"
-    }
 
     fetch(requestURL, options).then((res) => {
       if(res.ok) {
