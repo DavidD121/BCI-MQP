@@ -22,7 +22,7 @@ function readProblem() {
     }
     
     chrome.runtime.sendMessage(problemData, function(response) {
-      console.log(response.farewell);
+      console.log(response);
     });
   }
 }
@@ -78,3 +78,18 @@ const timer = setInterval(() => {
     observer.observe(targetNode, config);
   }
 }, 150);
+
+function showHint() {
+  return null;
+}
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(request, sender);
+    if(!sender.tab && "alert" in request){
+      if(confirm("It seems like you've been stuck for a while,\nWould you like a hint?"))
+        showHint();
+    }
+    sendResponse({msg: "msg received"});
+  }
+);
