@@ -38,14 +38,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
   if (msg.message == "gib data")
     sendReponse({message: "value", value:val});
 
-  if (sender.tab) {
+  if (sender.tab && msg.type != "new problem") {
 
     console.log("message: " + msg);
 
     const apiURL = "http://127.0.0.1:5000"
     let requestURL = "";
 
-    switch(msg["type"]) {
+    switch(msg.type) {
       case "start":
         requestURL = apiURL + "/ProblemStart";
         break;
@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
         requestURL = apiURL + "/ProblemSubmit";
         break;
       default:
-        requestURL = apiURL;
+        return;
     }
 
     delete msg["type"];

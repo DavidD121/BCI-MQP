@@ -86,20 +86,3 @@ input:checked + .slider:before {
   display: none;
   margin: 10px;
 }
-
-.submit {
-  margin: 10px;
-  padding: 5px;
-  border-radius: 5px;
-  border-style: solid;
-  border-color: gray;
-  font-size: large;
-  color: rgb(92, 92, 92);
-  transition: all 200ms ease-out;
-
-}
-
-.submit:hover {
-  box-shadow: 0 0 0 1px rgb(50 92 225 / 40%);
-  cursor: pointer;
-}

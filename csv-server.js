@@ -8,7 +8,7 @@ let express = require('express');
 
 let app = express()
 
-let writer = fs.createWriteStream('test_gfg.csv') 
+let writer = fs.createWriteStream('response_' + Date.now().toString() + '.csv') 
 
 csvHeaders = ['confidence', 'confidence timestamp', 'guess', 'changed mind', 'math mistake', 'other'];
 
