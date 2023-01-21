@@ -16,3 +16,7 @@ Note: This was developed on the original Google Chrome browser, it should run on
 Note: the number in the file name represents the time in milliseconds after epoch, meaning the higher the number, the more recent the file.
 
 
+TODO:
+* Log all user interactions with followup question
+    * Flag different kinds of inputs 
+* Log answers when problem is submitted and log correctness 
