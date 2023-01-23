@@ -5,13 +5,14 @@ button {
   border-style: solid;
   border-color: gray;
   font-size: small;
-  color: rgb(92, 92, 92);
-  background-color: white;
+  font-weight: 200;
+  color: white;
+  background-color: lightcoral;
   transition: all 200ms ease-out;
 }
 button:hover {
   box-shadow: 0 0 0 1px rgb(50 92 225 / 40%);
-  background-color: rgb(194, 194, 194);
+  background-color: rgb(237, 84, 84);
   cursor: pointer;
 }
 
