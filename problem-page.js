@@ -28,8 +28,38 @@ function readProblem() {
   }
 }
 
+function logAction(timestamp, action) {
+  const apiURL = 'http://localhost:3000/assistments';
+  request = {
+    timestamp: timestamp,
+    action: action
+  };
+  options = {
+    method: 'POST', 
+    body: JSON.stringify(request),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  };
+  fetch(apiURL, options).then((res) => {
+    if(res.ok) {
+      console.log('csv logged');
+    } else {
+      throw new Error('Error sending data');
+    }
+  })
+  .catch((error) =>{
+    console.log(error);
+  });
+}
+
+const helpHandler = (text) => {
+  logAction(Date.now(),  text + ' clicked')
+}
+
 const submitHandler = () => {
-  console.log('clicked');
+  console.log('submit');
+  logAction(Date.now(), 'Submit clicked')
   const data = {
     type: 'submit', 
     problem_id: currentProblemID
@@ -43,8 +73,9 @@ const submitHandler = () => {
 }
 
 const newProblemHandler = (event) => {
-  if (event.srcElement.textContent == "Next Problem") {
+  if (event.srcElement.textContent == 'Next Problem') {
     console.log('new problem');
+    logAction(Date.now(), 'Next Problem clicked')
     const data = {
       type: 'new problem'
     };
@@ -65,10 +96,13 @@ const newProblemCallback = (mutationList, observer) => {
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
         const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
+        
+        const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden)
 
         const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
         currentSubmitButton.addEventListener('click', submitHandler);
         nextProblemButton.addEventListener('click', newProblemHandler);
+        helpButton.addEventListener('click', () => helpHandler(helpButton.textContent))
 
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
@@ -102,9 +136,9 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log(request, sender);
     if(!sender.tab && 'alert' in request){
-      helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
+      const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
 
-      helpPrompt = '';
+      let helpPrompt = '';
       switch(helpButton.textContent){
         case('Break this problem into steps'):
           helpPrompt = 'Would you like to break the problem into steps?';

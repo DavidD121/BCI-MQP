@@ -10,7 +10,7 @@ let app = express()
 
 let writer = fs.createWriteStream('response_' + Date.now().toString() + '.csv') 
 
-csvHeaders = ['confidence', 'confidence timestamp', 'guess', 'changed mind', 'math mistake', 'other'];
+csvHeaders = ['timestamp', 'action'];
 
 csvFormatter = (string, currentVal) => string + ',' + currentVal;
 headerString = csvHeaders.reduce(csvFormatter)
@@ -32,10 +32,20 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 })
 
-app.post("/", (req, res) => {
+app.post("/followup", (req, res) => {
     console.log(req.body);
     csvParams = [req.body.confidence, req.body.confidenceTimestamp, req.body.guess, 
         req.body.changedMind, req.body.mathMistake, req.body.other];
+    csvString = "\n" + csvParams.reduce(csvFormatter);
+    writer.write(csvString);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('csv wrote\n');
+});
+
+app.post("/assistments", (req, res) => {
+    console.log(req.body);
+    csvParams = [req.body.timestamp, req.body.action];
     csvString = "\n" + csvParams.reduce(csvFormatter);
     writer.write(csvString);
     res.statusCode = 200;
