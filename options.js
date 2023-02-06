@@ -55,8 +55,8 @@ function resetQuestion() {
 chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
   console.log("msg recieved in options")
   if(msg.type == "new problem") {
-    submit();
-    resetQuestion();
-    sendReponse({msg: "reset follow-up question"})
+    //submit();
+    //resetQuestion();
+    //sendReponse({msg: "reset follow-up question"})
   }
 });

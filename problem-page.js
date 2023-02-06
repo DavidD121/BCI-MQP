@@ -29,6 +29,7 @@ function readProblem() {
 }
 
 function logAction(timestamp, action) {
+  console.log('request');
   const apiURL = 'http://localhost:3000/assistments';
   request = {
     timestamp: timestamp,
@@ -53,13 +54,13 @@ function logAction(timestamp, action) {
   });
 }
 
-const helpHandler = (text) => {
-  logAction(Date.now(),  text + ' clicked')
+const helpHandler = (event) => {
+  logAction(Date.now(), event.srcElement.textContent + ' clicked');
 }
 
 const submitHandler = () => {
   console.log('submit');
-  logAction(Date.now(), 'Submit clicked')
+  logAction(Date.now(), 'Submit clicked');
   const data = {
     type: 'submit', 
     problem_id: currentProblemID
@@ -73,9 +74,10 @@ const submitHandler = () => {
 }
 
 const newProblemHandler = (event) => {
-  if (event.srcElement.textContent == 'Next Problem') {
+  buttonText = event.srcElement.textContent
+  logAction(Date.now(), buttonText + ' clicked');
+  if (buttonText == 'Next Problem') {
     console.log('new problem');
-    logAction(Date.now(), 'Next Problem clicked')
     const data = {
       type: 'new problem'
     };
@@ -96,17 +98,17 @@ const newProblemCallback = (mutationList, observer) => {
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
         const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
-        
-        const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden)
+        const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
 
         const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
+        
         currentSubmitButton.addEventListener('click', submitHandler);
         nextProblemButton.addEventListener('click', newProblemHandler);
-        helpButton.addEventListener('click', () => helpHandler(helpButton.textContent))
+        helpButton.addEventListener('click', helpHandler);
 
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
-            event.preventDefault();
+            event.preventDefault();;
             currentSubmitButton.click();
           }
         });
