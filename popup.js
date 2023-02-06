@@ -1,34 +1,30 @@
-function setState(value) {
-  if (value < 0.5) {
-    console.log("sleepy");
-    document.getElementById('img').src="/images/sleepy.png";
-    document.getElementById('txt').textContent="Your mind seems to be wandering...";
+const LEARNING = 0;
+const FOLLOWING = 1;
+
+function setState(state) {
+  if (state == LEARNING) {
+    console.log('learning');
+    document.getElementById('img').src='/images/thinking-160.png';
+    document.getElementById('txt').textContent="You seem confused by this problem, don't give up!";
   } else {
-    console.log("focused");
-    chrome.action.setIcon({ path: "/images/smile-32.png" });
-    document.getElementById('img').src="/images/smile.png";
-    document.getElementById('txt').textContent="You are focused and learning proactively!";
+    console.log('following');
+    document.getElementById('img').src='/images/lightbulb-160.png';
+    document.getElementById('txt').textContent='Looks like you understand this problem!';
   }
 }
 
-chrome.runtime.sendMessage({message: "gib data"}, (response) => {
-  if(response.message == "value") {
-    console.log(response.value)
-    setState(parseFloat(response.value));
-  } else {
-    console.log("invalid response")
+chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
+  if('state' in msg) {
+    setState(msg.state);
   }
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name == "updatePopup") {
-    chrome.runtime.sendMessage({message: "gib data"}, (response) => {
-      if(response.message == "value") {
-        console.log(response.value)
-        setState(parseFloat(response.value));
-      } else {
-        console.log("invalid response")
-      }
-    });
-  }
+document.getElementById('disagree').addEventListener('click', () => {
+  console.log("disagreed");
+  data = {
+    type: 'disagree'
+  };
+  chrome.runtime.sendMessage(data, function(response) {
+    console.log(response);
+  });
 });

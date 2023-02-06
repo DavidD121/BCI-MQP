@@ -17,16 +17,12 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "/images/sleepy.png",
-      "32": "/images/sleepy.png",
-      "48": "/images/sleepy.png",
-      "128": "/images/sleepy.png"
+      "32": "/images/thinking-32.png",
+      "128": "/images/thinking-160.png"
     }
   },
   "icons": {
-    "16": "/images/sleepy.png",
-    "32": "/images/sleepy.png",
-    "48": "/images/sleepy.png",
-    "128": "/images/sleepy.png"
+    "32": "/images/thinking-32.png",
+    "128": "/images/thinking-160.png"
   }
 }

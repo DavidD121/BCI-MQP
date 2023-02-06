@@ -2,7 +2,7 @@ let currentProblemID = ''
 
 // Reads problem ID, if the problem has been proken into steps, get the current step ID as well
 function readProblem() {
-  const problemElements = document.getElementsByClassName("GOBIPLGDDM");
+  const problemElements = document.getElementsByClassName('GOBIPLGDDM');
   if (problemElements.length == 0) {
     return false;
   } else {
@@ -14,15 +14,15 @@ function readProblem() {
     let problemData = {};
 
     if (problemID.includes('-')) {
-      problemData["type"] = "step"
-      problemData["step_id"] = problemID;
+      problemData.type = 'step'
+      problemData.step_id = problemID;
     } else {
-      problemData["type"] = "start"
-      problemData["problem_id"] = problemID;
+      problemData.type = 'start'
+      problemData.problem_id = problemID;
     }
     
     chrome.runtime.sendMessage(problemData, function(response) {
-      console.log(response.farewell);
+      console.log(response);
     });
   }
 }
@@ -30,8 +30,8 @@ function readProblem() {
 const submitHandler = () => {
   console.log('clicked');
   const data = {
-    "type": "submit", 
-    "problem_id": currentProblemID
+    type: 'submit', 
+    problem_id: currentProblemID
   };
 
   chrome.runtime.sendMessage(data, function(response) {
@@ -42,17 +42,17 @@ const submitHandler = () => {
 const newProblemCallback = (mutationList, observer) => {
   for (const mutation of mutationList) {
     for (const node of mutation.addedNodes){
-      if(node.className == "GOBIPLGDPI") {
+      if(node.className == 'GOBIPLGDPI') {
         readProblem();
         
-        const buttons = Array.from(document.getElementsByClassName("GOBIPLGDEL"));
+        const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
 
-        const inputBox = Array.from(document.getElementsByClassName("gwt-TextBox")).pop();
+        const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
         currentSubmitButton.addEventListener('click', submitHandler);
 
-        inputBox.addEventListener("keypress", function(event) {
-          if (event.key === "Enter") {
+        inputBox.addEventListener('keypress', function(event) {
+          if (event.key === 'Enter') {
             event.preventDefault();
             currentSubmitButton.click();
           }
@@ -64,7 +64,7 @@ const newProblemCallback = (mutationList, observer) => {
 
 // Waiting for DOM to load to read problem
 const timer = setInterval(() => {
-  const nodeSearch = document.getElementsByClassName("GOBIPLGDKI");
+  const nodeSearch = document.getElementsByClassName('GOBIPLGDKI');
   if(nodeSearch.length != 0) {
     clearTimeout(timer);
 
@@ -78,3 +78,37 @@ const timer = setInterval(() => {
     observer.observe(targetNode, config);
   }
 }, 150);
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(request, sender);
+    if(!sender.tab && 'alert' in request){
+      helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
+
+      helpPrompt = '';
+      switch(helpButton.textContent){
+        case('Break this problem into steps'):
+          helpPrompt = 'Would you like to break the problem into steps?';
+          break;
+        case('Show hint'):
+          helpPrompt = 'Would you like a hint?';
+          break;
+        case('Show answer'):
+          helpPrompt = 'Would you like to show the answer?'
+          break;
+      }
+
+      if(helpPrompt != '') {
+        if(confirm("It seems like you've been stuck for a while,\n" + helpPrompt)) {
+          helpButton.click();
+          sendResponse({msg: 'help accepted'});
+        } else {
+          sendResponse({msg: 'help declined'});
+        }
+      } else {
+        sendResponse({msg: 'No further help possible'});
+      }
+        
+    }
+  }
+);
