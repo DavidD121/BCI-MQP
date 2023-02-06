@@ -20,10 +20,11 @@ function readProblem() {
       problemData.type = 'start'
       problemData.problem_id = problemID;
     }
-    
-    chrome.runtime.sendMessage(problemData, function(response) {
+
+    (async () => {
+      const response = await chrome.runtime.sendMessage(problemData);
       console.log(response);
-    });
+    })();
   }
 }
 
@@ -34,9 +35,25 @@ const submitHandler = () => {
     problem_id: currentProblemID
   };
 
-  chrome.runtime.sendMessage(data, function(response) {
-    console.log(response.farewell);
-  });
+  (async () => {
+    const response = await chrome.runtime.sendMessage(data);
+    console.log(response);
+  })();
+
+}
+
+const newProblemHandler = (event) => {
+  if (event.srcElement.textContent == "Next Problem") {
+    console.log('new problem');
+    const data = {
+      type: 'new problem'
+    };
+
+    (async () => {
+      const response = await chrome.runtime.sendMessage(data);
+      console.log(response);
+    })();
+  } 
 }
 
 const newProblemCallback = (mutationList, observer) => {
@@ -47,9 +64,11 @@ const newProblemCallback = (mutationList, observer) => {
         
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
+        const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
 
         const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
         currentSubmitButton.addEventListener('click', submitHandler);
+        nextProblemButton.addEventListener('click', newProblemHandler);
 
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {

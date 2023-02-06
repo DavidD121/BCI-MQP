@@ -1,46 +1,62 @@
-// let page = document.getElementById("buttonDiv");
-// let selectedClassName = "current";
-// const presetButtonColors = ["#3aa757", "#e8453c", "#f9bb2d", "#4688f1"];
+// Styling for other checkbox
+document.getElementById('other').addEventListener('click', () => {
+  if(document.getElementById('other').checked) {
+    document.getElementById('other_txt').style.display = 'block';
+  } else {
+    document.getElementById('other_txt').style.display = 'none';
+  }
+});
 
-// // Reacts to a button click by marking the selected button and saving
-// // the selection
-// function handleButtonClick(event) {
-//   // Remove styling from the previously selected color
-//   let current = event.target.parentElement.querySelector(
-//     `.${selectedClassName}`
-//   );
-//   if (current && current !== event.target) {
-//     current.classList.remove(selectedClassName);
-//   }
+let timestamp = 0;
 
-//   // Mark the button as selected
-//   let color = event.target.dataset.color;
-//   event.target.classList.add(selectedClassName);
-//   chrome.storage.sync.set({ color });
-// }
+document.getElementById('confidence').addEventListener('click', () => {
+  timestamp = Date.now();
+  console.log("timestamp saved: ", timestamp);
+});
 
-// // Add a button to the page for each supplied color
-// function constructOptions(buttonColors) {
-//   chrome.storage.sync.get("color", (data) => {
-//     let currentColor = data.color;
-//     // For each color we were provided…
-//     for (let buttonColor of buttonColors) {
-//       // …create a button with that color…
-//       let button = document.createElement("button");
-//       button.dataset.color = buttonColor;
-//       button.style.backgroundColor = buttonColor;
+function submit() {
+  const apiURL = 'http://localhost:3000';
+  request = {
+    confidence: document.getElementById('confidence').checked,
+    confidenceTimestamp: timestamp,
+    guess: document.getElementById('q1').checked,
+    changedMind: document.getElementById('q2').checked,
+    mathMistake: document.getElementById('q3').checked,
+    other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other_txt').value) + '\"' : '' 
+  };
+  options = {
+    method: "POST", 
+    body: JSON.stringify(request),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  };
+  fetch(apiURL, options).then((res) => {
+    if(res.ok) {
+      console.log("csv logged");
+    } else {
+      throw new Error("Error sending data");
+    }
+  })
+  .catch((error) =>{
+    console.log(error);
+  });
+}
 
-//       // …mark the currently selected color…
-//       if (buttonColor === currentColor) {
-//         button.classList.add(selectedClassName);
-//       }
+function resetQuestion() {
+  document.getElementById('confidence').checked = false;
+  document.getElementById('q1').checked = false;
+  document.getElementById('q2').checked = false;
+  document.getElementById('q3').checked = false;
+  document.getElementById('other').checked = false;
+  document.getElementById('other_txt').value = '';    
+}
 
-//       // …and register a listener for when that button is clicked
-//       button.addEventListener("click", handleButtonClick);
-//       page.appendChild(button);
-//     }
-//   });
-// }
-
-// // Initialize the page by constructing the color options
-// constructOptions(presetButtonColors);
+chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
+  console.log("msg recieved in options")
+  if(msg.type == "new problem") {
+    submit();
+    resetQuestion();
+    sendReponse({msg: "reset follow-up question"})
+  }
+});
