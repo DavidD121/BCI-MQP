@@ -1,14 +1,23 @@
-const LEARNING = 0;
+const ACQUISITION = 0;
 const FOLLOWING = 1;
-let state = LEARNING;
+let prevState = ACQUISITION;
+let state = ACQUISITION;
 let timer = 0;
 
-let timeToHint = 60000; //time until user is alerted for a hint
+let samplingRate = 10; // Amount of times per minute that the state of the user is obtained from the API 
+let hintSampleBuffer = 90000; // Length of time where the users state is tracked to send a hint
+let hintThreshold = 0.90; // Ratio of time within the buffer where the user is confused that warrants a hint
+
+let confusionBuffer = [];
+
+function addToConfusionBuffer() {
+  
+}
 
 const apiURL = 'http://127.0.0.1:5000';
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.alarms.create('getData', {periodInMinutes: .1});
+  chrome.alarms.create('getData', {periodInMinutes: 1/samplingRate});
   console.log('starting alarms');
   timer = Date.now()
 });
@@ -31,39 +40,35 @@ function sendHintAlert() {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name == 'getData') {
     console.log('fetching');
-    fetch('http://127.0.0.1:5000/rnd').then((res) => {
+    fetch('http://127.0.0.1:5000/GetRLState').then((res) => {
       if(res.ok) {
         return res.json();
       }
       throw new Error('Error fetching value');
     })
     .then((data) => {
-      console.log(data);
-      val = data.value;
-      if (val <= 0.5) {
-        prevState = state;
-        state = LEARNING;
-  
-        if(prevState == LEARNING && Date.now() - timer >= timeToHint){
+      val = data.state;
+      state = val
+      console.log(state);
+      if (state == ACQUISITION) {
+        if(prevState == ACQUISITION && Date.now() - timer >= timeToHint){
           sendHintAlert();
           timer = Date.now();
         } else if(prevState == FOLLOWING) {
           timer = Date.now();
-          state = LEARNING;
           chrome.action.setIcon({ path: '/images/thinking-32.png' });
           updatePopupState();
         }
-      } else if(val > 0.5) {
-        prevState = state;
-        state = FOLLOWING;
-        if(prevState == LEARNING) {
+      } else if(state == FOLLOWING) {
+        if(prevState == ACQUISITION) {
           chrome.action.setIcon({ path: '/images/lightbulb-32.png' });
         }
         updatePopupState();
       }
+      prevState = state;
     })
     .catch((error) =>{
-      console.log(error);
+      console.error(error);
     });
   }
 });
@@ -119,7 +124,7 @@ function problemSetUpdateTrigger(msg) {
 function stateDisagreeTrigger(msg) {
   requestURL = apiURL + '/Disagree'
   params = {
-    state: state == 0 ? "learning" : "following"
+    state: state == 0 ? "accquisition" : "following"
   };
 
   postRequest(requestURL, params);
