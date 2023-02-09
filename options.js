@@ -30,9 +30,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
     sendReponse({msg: "reset follow-up question"})
   } else if (msg.type == 'incorrect') {
     console.log('incorrect');
-    timestamp = Date.now();
-    setIncorrectPromptVisibility(true);
-    log(timestamp, 'Incorrect Guess');
+    if(document.getElementById('confidence').checked) {
+      timestamp = Date.now();
+      setIncorrectPromptVisibility(true);
+      log(timestamp, 'Incorrect Guess with confidence checked');
+    }
   }
 });
 
