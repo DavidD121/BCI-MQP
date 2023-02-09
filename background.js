@@ -48,9 +48,19 @@ function problemSetUpdateTrigger(msg) {
   postRequest(requestURL, params)
 }
 
+function handleIncorrectAnswer() {
+  (async () => {
+    const response = await chrome.runtime.sendMessage({type: 'incorrect'});
+    console.log(response);
+  })();
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
   // handle problem set update triggers
   if (sender.tab) 
+    if(msg.type == 'submit') {
+      if (!msg.correct) handleIncorrectAnswer();
+    }
     problemSetUpdateTrigger(msg);
     
 });

@@ -59,10 +59,16 @@ const helpHandler = (event) => {
 }
 
 const submitHandler = () => {
-  console.log('submit');
+  // Handles logging and correctness chacking when user submits problem
   logAction(Date.now(), 'Submit clicked');
+  
+  // Check if incorrect message element appears on the page after submitting answer
+  let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ')); 
+  let incorrectMessage = elements.findLast(element => element.textContent.includes('Sorry'));
+
   const data = {
-    type: 'submit', 
+    type: 'submit',
+    correct: incorrectMessage ? false : true,
     problem_id: currentProblemID
   };
 

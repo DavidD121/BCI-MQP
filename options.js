@@ -1,23 +1,63 @@
-// Styling for other checkbox
+// Hiding/showing other checkbox
 document.getElementById('other').addEventListener('click', () => {
   if(document.getElementById('other').checked) {
-    document.getElementById('other_txt').style.display = 'block';
+    document.getElementById('other-txt').style.display = 'block';
   } else {
-    document.getElementById('other_txt').style.display = 'none';
+    document.getElementById('other-txt').style.display = 'none';
   }
 });
 
+// Adding event listeners to each input element
 inputs = Array.from(document.getElementsByTagName('input'));
 
 inputs.forEach(element => {
+  // Log every instance the buttons are clicked
   element.addEventListener('click', (event) => {
     timestamp = Date.now();
     action  = event.srcElement.id + " clicked";
-    submit(timestamp, action);
+    log(timestamp, action);
   });
 });
 
-function submit(timestamp, action) {
+// Message listener
+chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
+  console.log("msg recieved in options")
+  if (msg.type == "new problem") {
+    timestamp = Date.now();
+    action = "Problem submitted";
+    log(timestamp, action);
+    resetQuestion();
+    sendReponse({msg: "reset follow-up question"})
+  } else if (msg.type == 'incorrect') {
+    console.log('incorrect');
+    timestamp = Date.now();
+    setIncorrectPromptVisibility(true);
+    log(timestamp, 'Incorrect Guess');
+  }
+});
+
+/**
+ * Set Incorrect Prompt Visibility
+ * Sets visibility of the checkbox prompt when a problem is answered incorrectly
+ * 
+ * @param {bool} visible  Whether the prompt should be visible or not
+*/
+function setIncorrectPromptVisibility(visible) {
+  if(visible) {
+    document.getElementById('incorrect-prompt').style.display = 'block';
+  } else {
+    document.getElementById('incorrect-prompt').style.display = 'none';
+  }
+}
+
+/**
+ * Log
+ * Log the users action on with the follow-up question
+ * 
+ * @param {int} timestamp Time in ms since epoch that the action occured
+ * @param {string} action A short string describing the action being logged i.e 'Submit button pressed'
+*/
+function log(timestamp, action) {
   const apiURL = 'http://localhost:3000/followup';
   request = {
     timestamp: timestamp,
@@ -26,7 +66,7 @@ function submit(timestamp, action) {
     guess: document.getElementById('guess').checked,
     changedMind: document.getElementById('changedMind').checked,
     mathMistake: document.getElementById('mathMistake').checked,
-    other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other_txt').value) + '\"' : '' 
+    other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other-txt').value) + '\"' : '' 
   };
   options = {
     method: "POST", 
@@ -47,22 +87,16 @@ function submit(timestamp, action) {
   });
 }
 
+/**
+ * Reset Question
+ * Resets the follow-up question to its original state 
+*/
 function resetQuestion() {
   document.getElementById('confidence').checked = false;
   document.getElementById('guess').checked = false;
   document.getElementById('changedMind').checked = false;
   document.getElementById('mathMistake').checked = false;
   document.getElementById('other').checked = false;
-  document.getElementById('other_txt').value = '';    
+  document.getElementById('other-txt').value = ''; 
+  setIncorrectPromptVisibility(false);   
 }
-
-chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
-  console.log("msg recieved in options")
-  if(msg.type == "new problem") {
-    timestamp = Date.now();
-    action = "Problem submitted";
-    submit(timestamp, action);
-    resetQuestion();
-    sendReponse({msg: "reset follow-up question"})
-  }
-});

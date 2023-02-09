@@ -86,3 +86,7 @@ input:checked + .slider:before {
   display: none;
   margin: 10px;
 }
+
+#incorrect-prompt {
+  display: none;
+}
