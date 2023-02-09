@@ -7,21 +7,25 @@ document.getElementById('other').addEventListener('click', () => {
   }
 });
 
-let timestamp = 0;
+inputs = Array.from(document.getElementsByTagName('input'));
 
-document.getElementById('confidence').addEventListener('click', () => {
-  timestamp = Date.now();
-  console.log("timestamp saved: ", timestamp);
+inputs.forEach(element => {
+  element.addEventListener('click', (event) => {
+    timestamp = Date.now();
+    action  = event.srcElement.id + " clicked";
+    submit(timestamp, action);
+  });
 });
 
-function submit() {
-  const apiURL = 'http://localhost:3000';
+function submit(timestamp, action) {
+  const apiURL = 'http://localhost:3000/followup';
   request = {
+    timestamp: timestamp,
+    action: action,
     confidence: document.getElementById('confidence').checked,
-    confidenceTimestamp: timestamp,
-    guess: document.getElementById('q1').checked,
-    changedMind: document.getElementById('q2').checked,
-    mathMistake: document.getElementById('q3').checked,
+    guess: document.getElementById('guess').checked,
+    changedMind: document.getElementById('changedMind').checked,
+    mathMistake: document.getElementById('mathMistake').checked,
     other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other_txt').value) + '\"' : '' 
   };
   options = {
@@ -45,9 +49,9 @@ function submit() {
 
 function resetQuestion() {
   document.getElementById('confidence').checked = false;
-  document.getElementById('q1').checked = false;
-  document.getElementById('q2').checked = false;
-  document.getElementById('q3').checked = false;
+  document.getElementById('guess').checked = false;
+  document.getElementById('changedMind').checked = false;
+  document.getElementById('mathMistake').checked = false;
   document.getElementById('other').checked = false;
   document.getElementById('other_txt').value = '';    
 }
@@ -55,8 +59,10 @@ function resetQuestion() {
 chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
   console.log("msg recieved in options")
   if(msg.type == "new problem") {
-    //submit();
-    //resetQuestion();
-    //sendReponse({msg: "reset follow-up question"})
+    timestamp = Date.now();
+    action = "Problem submitted";
+    submit(timestamp, action);
+    resetQuestion();
+    sendReponse({msg: "reset follow-up question"})
   }
 });

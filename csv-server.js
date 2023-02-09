@@ -6,21 +6,28 @@ let fs = require('fs');
 let bodyParser = require('body-parser');
 let express = require('express');
 
-let app = express()
+let app = express();
 
-let writer = fs.createWriteStream('response_' + Date.now().toString() + '.csv') 
+let followupWriter = fs.createWriteStream('followup_' + Date.now().toString() + '.csv');
+let assistmentsWriter = fs.createWriteStream('assistments_' + Date.now().toString() + '.csv');
 
-csvHeaders = ['timestamp', 'action'];
+
+followupCSVHeaders = ['timestamp', 'confidence', 'guess', 'changed mind', 'math mistake', 'other'];
+assistmentsCSVHeaders = ['timestamp', 'action'];
 
 csvFormatter = (string, currentVal) => string + ',' + currentVal;
-headerString = csvHeaders.reduce(csvFormatter)
-writer.write(headerString);
+
+followupHeaderString = followupCSVHeaders.reduce(csvFormatter);
+followupWriter.write(followupHeaderString);
+
+assistmentsHeaderString = assistmentsCSVHeaders.reduce(csvFormatter);
+assistmentsWriter.write(assistmentsHeaderString);
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 const cors = require('cors');
 app.use(cors({
@@ -34,10 +41,10 @@ app.get('/', (req, res) => {
 
 app.post("/followup", (req, res) => {
     console.log(req.body);
-    csvParams = [req.body.confidence, req.body.confidenceTimestamp, req.body.guess, 
+    csvParams = [req.body.timestamp, req.body.action, req.body.confidence, req.body.guess, 
         req.body.changedMind, req.body.mathMistake, req.body.other];
     csvString = "\n" + csvParams.reduce(csvFormatter);
-    writer.write(csvString);
+    followupWriter.write(csvString);
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
     res.end('csv wrote\n');
@@ -47,7 +54,7 @@ app.post("/assistments", (req, res) => {
     console.log(req.body);
     csvParams = [req.body.timestamp, req.body.action];
     csvString = "\n" + csvParams.reduce(csvFormatter);
-    writer.write(csvString);
+    assistmentsWriter.write(csvString);
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
     res.end('csv wrote\n');
