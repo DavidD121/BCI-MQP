@@ -12,7 +12,7 @@ let followupWriter = fs.createWriteStream('followup_' + Date.now().toString() + 
 let assistmentsWriter = fs.createWriteStream('assistments_' + Date.now().toString() + '.csv');
 
 
-followupCSVHeaders = ['timestamp', 'confidence', 'guess', 'changed mind', 'math mistake', 'other'];
+followupCSVHeaders = ['timestamp', 'action', 'confidence', 'guess', 'changed mind', 'math mistake', 'other'];
 assistmentsCSVHeaders = ['timestamp', 'action'];
 
 csvFormatter = (string, currentVal) => string + ',' + currentVal;
