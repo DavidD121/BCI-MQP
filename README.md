@@ -5,6 +5,7 @@ Note: This was developed on the original Google Chrome browser, it should run on
 2. In the Chrome browser, click on the puzzle piece in the top right corner and click "Manage Extensions"
 3. In the top right of the page make sure that developer mode is enabled
 4. Once developer mode is enabled a "Load unpacked" button should appear in the top left, Click it and select the folder of the github repo. Ensure that the folder contains the "manifest.json" file.
+5. The chrome extension should now be installed, check to see if the API is recieving regular GET requests for the users cognitive state. If it is not, try reseting the chrome extension in the "Manage Extensions" page by pressing the "Update" button in the top right.
 
 ## Follow-up question
 1. In the Chrome browser, right click the extension icon and click "Options." this will open the follow-up problems page.
@@ -14,9 +15,3 @@ Note: This was developed on the original Google Chrome browser, it should run on
 
 
 Note: the number in the file name represents the time in milliseconds after epoch, meaning the higher the number, the more recent the file.
-
-
-TODO:
-* Log all user interactions with followup question
-    * Flag different kinds of inputs 
-* Log answers when problem is submitted and log correctness 
