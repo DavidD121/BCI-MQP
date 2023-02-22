@@ -34,7 +34,7 @@ let prevState = ACQUISITION;
 let state = ACQUISITION;
 let timer = 0;
 
-let samplingRate = 10; // Amount of times per minute that the state of the user is obtained from the API 
+let samplingRate = 20; // Amount of times per minute that the state of the user is obtained from the API 
 let hintSampleBuffer = 90; // Length of time in seconds where the users state is tracked to send a hint
 let hintThreshold = 0.90; // Ratio of time within the buffer where the user is confused that warrants a hint
 
@@ -161,7 +161,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
   if (msg.message == 'gib data')
     sendReponse({message: 'value', value:state});
 
-  
+  if (msg.type == 'new problem')
+    cognitiveStateBuffer.empty(); // reset buffer when new problem is started
+
   if(msg.type == 'disagree')
     stateDisagreeTrigger(msg);
 

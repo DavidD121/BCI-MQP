@@ -52,11 +52,11 @@ function resetQuestion() {
   document.getElementById('other_txt').value = '';    
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
-  console.log("msg recieved in options")
-  if(msg.type == "new problem") {
-    //submit();
-    //resetQuestion();
-    //sendReponse({msg: "reset follow-up question"})
-  }
-});
+// chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
+//   console.log("msg recieved in options")
+//   if(msg.type == "new problem") {
+//     submit();
+//     resetQuestion();
+//     sendReponse({msg: "reset follow-up question"})
+//   }
+// });
