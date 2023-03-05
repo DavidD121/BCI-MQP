@@ -20,23 +20,73 @@ function readProblem() {
       problemData.type = 'start'
       problemData.problem_id = problemID;
     }
-    
-    chrome.runtime.sendMessage(problemData, function(response) {
+
+    (async () => {
+      const response = await chrome.runtime.sendMessage(problemData);
       console.log(response);
-    });
+    })();
   }
 }
 
+function logAction(timestamp, action) {
+  console.log('request');
+  const apiURL = 'http://localhost:3000/assistments';
+  request = {
+    timestamp: timestamp,
+    action: action
+  };
+  options = {
+    method: 'POST', 
+    body: JSON.stringify(request),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  };
+  fetch(apiURL, options).then((res) => {
+    if(res.ok) {
+      console.log('csv logged');
+    } else {
+      throw new Error('Error sending data');
+    }
+  })
+  .catch((error) =>{
+    console.log(error);
+  });
+}
+
+const helpHandler = (event) => {
+  logAction(Date.now(), event.srcElement.textContent + ' clicked');
+}
+
 const submitHandler = () => {
-  console.log('clicked');
+  console.log('submit');
+  logAction(Date.now(), 'Submit clicked');
   const data = {
     type: 'submit', 
     problem_id: currentProblemID
   };
 
-  chrome.runtime.sendMessage(data, function(response) {
-    console.log(response.farewell);
-  });
+  (async () => {
+    const response = await chrome.runtime.sendMessage(data);
+    console.log(response);
+  })();
+
+}
+
+const newProblemHandler = (event) => {
+  buttonText = event.srcElement.textContent
+  logAction(Date.now(), buttonText + ' clicked');
+  if (buttonText == 'Next Problem') {
+    console.log('new problem');
+    const data = {
+      type: 'new problem'
+    };
+
+    (async () => {
+      const response = await chrome.runtime.sendMessage(data);
+      console.log(response);
+    })();
+  } 
 }
 
 const newProblemCallback = (mutationList, observer) => {
@@ -47,13 +97,18 @@ const newProblemCallback = (mutationList, observer) => {
         
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
+        const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
+        const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
 
         const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
+        
         currentSubmitButton.addEventListener('click', submitHandler);
+        nextProblemButton.addEventListener('click', newProblemHandler);
+        helpButton.addEventListener('click', helpHandler);
 
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
-            event.preventDefault();
+            event.preventDefault();;
             currentSubmitButton.click();
           }
         });
@@ -83,9 +138,9 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log(request, sender);
     if(!sender.tab && 'alert' in request){
-      helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
+      const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
 
-      helpPrompt = '';
+      let helpPrompt = '';
       switch(helpButton.textContent){
         case('Break this problem into steps'):
           helpPrompt = 'Would you like to break the problem into steps?';

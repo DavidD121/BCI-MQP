@@ -1,11 +1,43 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="button.css">
+    <link rel="stylesheet" href="options.css">
   </head>
   <body>
     <div>
-      <h1>hello there</h1>
+      <h3>Please answer the following as you proceed through the problem</h3>
+    </div>
+    <div class="question-container">
+      <label class="switch">
+        <input type="checkbox" id="confidence">
+        <span class="slider round"></span>
+      </label>
+      <label class="toggle-label">
+        <div>I know how to solve this problem</div>
+        <div>I do not know how to solve this problem</div>
+      </label>
+    </div>
+    <div class="question-container">
+        Please check all that apply
+        <div>
+          <input type="checkbox" id="guess" name="guess">
+          <label for="guess">I made a guess</label>
+        </div>
+        <div>
+          <input type="checkbox" id="changedMind" name="changedMind">
+          <label for="changedMind">I thought I knew how to solve the problem, now I am not so sure</label>
+        </div>
+        <div>
+          <input type="checkbox" id="mathMistake" name="mathMistake">
+          <label for="mathMistake">I made a math mistake</label>
+        </div>
+        <div>
+          <input type="checkbox" id="other" name="other">
+          <label for="other">Other</label>
+        </div>
+        <div>
+          <input type="text" id="other_txt" placeholder="Please Specify">
+        </div>
     </div>
     <script src="options.js"></script>
   </body>
