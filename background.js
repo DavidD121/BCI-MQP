@@ -45,7 +45,7 @@ const apiURL = 'http://127.0.0.1:5000';
 chrome.runtime.onInstalled.addListener(() => {
   chrome.alarms.create('getData', {periodInMinutes: 1/samplingRate});
   console.log('starting alarms');
-  timer = Date.now()
+  timer = Date.now();
 });
 
 function updatePopupState() {
@@ -145,11 +145,11 @@ function problemSetUpdateTrigger(msg) {
 
   delete msg.type;
   params = msg;
-  postRequest(requestURL, params)
+  postRequest(requestURL, params);
 }
 
 function stateDisagreeTrigger(msg) {
-  requestURL = apiURL + '/Disagree'
+  requestURL = apiURL + '/Disagree';
   params = {
     state: state == 0 ? "accquisition" : "following"
   };
