@@ -7,6 +7,9 @@ document.getElementById('other').addEventListener('click', () => {
   }
 });
 
+let currentProblemID = ''
+let userid = ''
+
 // Adding event listeners to each input element
 inputs = Array.from(document.getElementsByTagName('input'));
 
@@ -15,17 +18,20 @@ inputs.forEach(element => {
   element.addEventListener('click', (event) => {
     timestamp = Date.now();
     action  = event.srcElement.id + " clicked";
-    log(timestamp, action);
+    log(timestamp, action, currentProblemID, userid);
   });
 });
 
 // Message listener
 chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
+  currentProblemID = msg.problem_id
+  userid = msg.userid
   console.log("msg recieved in options")
+  console.log("message for " + currentProblemID)
   if (msg.type == "new problem") {
     timestamp = Date.now();
     action = "Problem submitted";
-    log(timestamp, action);
+    log(timestamp, action, currentProblemID, userid);
     resetQuestion();
     sendReponse({msg: "reset follow-up question"})
   } else if (msg.type == 'incorrect') {
@@ -33,7 +39,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
     if(document.getElementById('confidence').checked) {
       timestamp = Date.now();
       setIncorrectPromptVisibility(true);
-      log(timestamp, 'Incorrect Guess with confidence checked');
+      log(timestamp, 'Incorrect Guess with confidence checked', currentProblemID, userid);
     }
   }
 });
@@ -58,8 +64,11 @@ function setIncorrectPromptVisibility(visible) {
  * 
  * @param {int} timestamp Time in ms since epoch that the action occured
  * @param {string} action A short string describing the action being logged i.e 'Submit button pressed'
+ * @param {string} problemid
+ * @param {string} userid
+
 */
-function log(timestamp, action) {
+function log(timestamp, action, problemid, userid) {
   const apiURL = 'http://localhost:3000/followup';
   request = {
     timestamp: timestamp,
@@ -68,7 +77,9 @@ function log(timestamp, action) {
     guess: document.getElementById('guess').checked,
     changedMind: document.getElementById('changedMind').checked,
     mathMistake: document.getElementById('mathMistake').checked,
-    other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other-txt').value) + '\"' : '' 
+    other: document.getElementById('other').checked ? '\"' + String(document.getElementById('other-txt').value) + '\"' : '' ,
+    problemid: problemid,
+    userid: userid
   };
   options = {
     method: "POST", 

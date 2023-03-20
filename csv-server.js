@@ -12,8 +12,8 @@ let followupWriter = fs.createWriteStream('followup_' + Date.now().toString() + 
 let assistmentsWriter = fs.createWriteStream('assistments_' + Date.now().toString() + '.csv');
 
 
-followupCSVHeaders = ['timestamp', 'action', 'confidence', 'guess', 'changed mind', 'math mistake', 'other'];
-assistmentsCSVHeaders = ['timestamp', 'action'];
+followupCSVHeaders = ['timestamp', 'action', 'confidence', 'guess', 'changed mind', 'math mistake', 'other', 'problemid', 'userid'];
+assistmentsCSVHeaders = ['timestamp', 'action', 'problemid', 'userid', 'correct'];
 
 csvFormatter = (string, currentVal) => string + ',' + currentVal;
 
@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
 app.post("/followup", (req, res) => {
     console.log(req.body);
     csvParams = [req.body.timestamp, req.body.action, req.body.confidence, req.body.guess, 
-        req.body.changedMind, req.body.mathMistake, req.body.other];
+        req.body.changedMind, req.body.mathMistake, req.body.other, req.body.problemid, req.body.userid];
     csvString = "\n" + csvParams.reduce(csvFormatter);
     followupWriter.write(csvString);
     res.statusCode = 200;
@@ -52,7 +52,7 @@ app.post("/followup", (req, res) => {
 
 app.post("/assistments", (req, res) => {
     console.log(req.body);
-    csvParams = [req.body.timestamp, req.body.action];
+    csvParams = [req.body.timestamp, req.body.action, req.body.problemid, req.body.userid, req.body.correct];
     csvString = "\n" + csvParams.reduce(csvFormatter);
     assistmentsWriter.write(csvString);
     res.statusCode = 200;
