@@ -1,4 +1,6 @@
 let currentProblemID = ''
+let usernameBody = ''
+let userid = ''
 
 // Reads problem ID, if the problem has been proken into steps, get the current step ID as well
 function readProblem() {
@@ -10,6 +12,11 @@ function readProblem() {
     const problemID = idArray.pop();
     console.log(problemID);
     currentProblemID = problemID;
+
+    let regExp = /\(([^)]+)\)/;
+    usernameBody = document.getElementById('accountName').childNodes[0].textContent;
+    let matches = regExp.exec(usernameBody);
+    userid = matches[1]
 
     let problemData = {};
 
@@ -28,12 +35,15 @@ function readProblem() {
   }
 }
 
-function logAction(timestamp, action) {
+function logAction(timestamp, action, problemid, correct='') {
   console.log('request');
   const apiURL = 'http://localhost:3000/assistments';
   request = {
     timestamp: timestamp,
-    action: action
+    action: action,
+    problemid: problemid,
+    userid: userid,
+    correct: correct,
   };
   options = {
     method: 'POST', 
@@ -55,23 +65,31 @@ function logAction(timestamp, action) {
 }
 
 const helpHandler = (event) => {
-  logAction(Date.now(), event.srcElement.textContent + ' clicked');
+  console.log('helo geldi', currentProblemID);
+  logAction(Date.now(), event.srcElement.textContent + ' clicked', currentProblemID);
 }
 
 const submitHandler = () => {
+  console.log('submit geldi', currentProblemID);
+  let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ'));
+  let correctElements = elements.filter(element => element.innerText != 'Loading...')
+  let lastElement = correctElements[correctElements.length - 1]
+  let correctMessage = lastElement.innerText.includes('Correct!');
+  console.log('correct', correctMessage)
   // Handles logging and correctness chacking when user submits problem
-  logAction(Date.now(), 'Submit clicked');
+  logAction(Date.now(), 'Submit clicked', currentProblemID, correctMessage);
   
   console.log("handling");
 
   // Check if incorrect message element appears on the page after submitting answer
   let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ')); 
-  let incorrectMessage = !elements.findLast(element => element.textContent.includes('Correct!'));
+  let correctMessage = !elements.findLast(element => element.textContent.includes('Correct!'));
 
   const data = {
     type: 'submit',
-    correct: incorrectMessage ? false : true,
-    problem_id: currentProblemID
+    correct: correctMessage ? true : false,
+    problem_id: currentProblemID,
+    userid: userid
   };
 
   (async () => {
@@ -82,12 +100,15 @@ const submitHandler = () => {
 }
 
 const newProblemHandler = (event) => {
+  console.log('new problem geldi', currentProblemID)
   buttonText = event.srcElement.textContent
-  logAction(Date.now(), buttonText + ' clicked');
-  if (buttonText == 'Next Problem') {
+  logAction(Date.now(), buttonText + ' clicked', currentProblemID);
+  if (buttonText == 'Next Problem' || 'Break this problem into steps' || 'Next step') {
     console.log('new problem');
     const data = {
-      type: 'new problem'
+      type: 'new problem',
+      problem_id: currentProblemID,
+      userid: userid
     };
 
     (async () => {
@@ -112,7 +133,12 @@ const newProblemCallback = (mutationList, observer) => {
         
         currentSubmitButton.addEventListener('click', submitHandler);
         nextProblemButton.addEventListener('click', newProblemHandler);
-        helpButton.addEventListener('click', helpHandler);
+        if (helpButton.textContent == 'Break this problem into steps'){
+          helpButton.addEventListener('click', newProblemHandler);
+        }
+        else{
+          helpButton.addEventListener('click', helpHandler);
+        }
 
         // catching when users submit with the enter key instead of clicking the submit buttonS
         inputBox.addEventListener('keypress', function(event) {
