@@ -79,8 +79,11 @@ const submitHandler = () => {
   // Handles logging and correctness chacking when user submits problem
   logAction(Date.now(), 'Submit clicked', currentProblemID, correctMessage);
   
+  console.log("handling");
+
   // Check if incorrect message element appears on the page after submitting answer
-  
+  let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ')); 
+  let correctMessage = !elements.findLast(element => element.textContent.includes('Correct!'));
 
   const data = {
     type: 'submit',
@@ -137,10 +140,12 @@ const newProblemCallback = (mutationList, observer) => {
           helpButton.addEventListener('click', helpHandler);
         }
 
+        // catching when users submit with the enter key instead of clicking the submit buttonS
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
-            event.preventDefault();;
-            currentSubmitButton.click();
+            console.log("breh");
+            event.preventDefault();
+            submitHandler();
           }
         });
       }
