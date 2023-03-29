@@ -65,8 +65,13 @@ function logAction(timestamp, action, problemid, correct='') {
 }
 
 const helpHandler = (event) => {
-  console.log('helo geldi', currentProblemID);
-  logAction(Date.now(), event.srcElement.textContent + ' clicked', currentProblemID);
+  console.log('help geldi', currentProblemID, event.target.ariaHidden);
+  if(event.target.ariaHidden == "true"){
+    logAction(Date.now(), 'Show answer clicked', currentProblemID);
+  }
+  else{
+    logAction(Date.now(), 'Show hint clicked', currentProblemID);
+  }
 }
 
 const submitHandler = () => {
