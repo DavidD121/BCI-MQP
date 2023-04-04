@@ -86,10 +86,6 @@ const submitHandler = () => {
   
   console.log("handling");
 
-  // Check if incorrect message element appears on the page after submitting answer
-  let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ')); 
-  let correctMessage = !elements.findLast(element => element.textContent.includes('Correct!'));
-
   const data = {
     type: 'submit',
     correct: correctMessage ? true : false,
