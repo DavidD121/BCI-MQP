@@ -1,40 +1,67 @@
+/**
+ * problem-page.js
+ * 
+ * Content script for the assistments problem page. Monitors elements in the  
+ * assistments page and sends messages to background.js to send triggers
+ * Also communicates with the node.js server to well as log actions to csv
+ */
+
 let currentProblemID = ''
 let usernameBody = ''
 let userid = ''
 
-// Reads problem ID, if the problem has been proken into steps, get the current step ID as well
+/**
+ * readProblem
+ *  
+ * Reads current problem or step ID, sending a message to the background script
+ * to send a start trigger to the API
+*/ 
 function readProblem() {
+  // Get all of the text elements with problem IDs on the ASSISTments page
   const problemElements = document.getElementsByClassName('GOBIPLGDDM');
   if (problemElements.length == 0) {
     return false;
-  } else {
-    const idArray = Array.from(problemElements, problemElements => problemElements.textContent);
-    const problemID = idArray.pop();
-    console.log(problemID);
-    currentProblemID = problemID;
-
-    let regExp = /\(([^)]+)\)/;
-    usernameBody = document.getElementById('accountName').childNodes[0].textContent;
-    let matches = regExp.exec(usernameBody);
-    userid = matches[1]
-
-    let problemData = {};
-
-    if (problemID.includes('-')) {
-      problemData.type = 'step'
-      problemData.step_id = problemID;
-    } else {
-      problemData.type = 'start'
-      problemData.problem_id = problemID;
-    }
-
-    (async () => {
-      const response = await chrome.runtime.sendMessage(problemData);
-      console.log(response);
-    })();
   }
+
+  // Get the current problem ID
+  const idArray = Array.from(problemElements, problemElements => problemElements.textContent);
+  const problemID = idArray.pop();
+  console.log(problemID);
+  currentProblemID = problemID;
+
+  let regExp = /\(([^)]+)\)/;
+  usernameBody = document.getElementById('accountName').childNodes[0].textContent;
+  let matches = regExp.exec(usernameBody);
+  userid = matches[1]
+
+  let problemData = {};
+
+  // Identify if the new problem is a step (step IDs have a dash)
+  if (problemID.includes('-')) {
+    problemData.type = 'step'
+    problemData.step_id = problemID;
+  } else {
+    problemData.type = 'start'
+    problemData.problem_id = problemID;
+  }
+
+  // send message to background.js to send trigger
+  (async () => {
+    const response = await chrome.runtime.sendMessage(problemData);
+    console.log(response);
+  })();
+
 }
 
+/**
+ * logAction
+ *  
+ * Sends request to Node.js to log an action to csv
+ * 
+ * @param {number} timestamp The time in ms since epoch that the action occured
+ * @param {action} action A short string describing the action being logged 
+ *                        i.e 'Submit button pressed'
+*/ 
 function logAction(timestamp, action, problemid, correct='') {
   console.log('request');
   const apiURL = 'http://localhost:3000/assistments';
@@ -64,6 +91,12 @@ function logAction(timestamp, action, problemid, correct='') {
   });
 }
 
+/**
+ * helpHandler
+ * 
+ * Callback funtion for when the hint button is clicked. Send the request to 
+ * Log the action to CSV
+ */ 
 const helpHandler = (event) => {
   console.log('help geldi', currentProblemID, event.target.ariaHidden);
   if(event.target.ariaHidden == "true"){
@@ -74,13 +107,22 @@ const helpHandler = (event) => {
   }
 }
 
+/**
+ * submitHandler
+ * 
+ * Callback funtion for when the submit button is clicked. Sends message to 
+ * background.js to send trigger to API and sends request to log the action to
+ * csv
+ */ 
 const submitHandler = () => {
   console.log('submit geldi', currentProblemID);
+  // Checking if correct message is on page after submit
   let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ'));
   let correctElements = elements.filter(element => element.innerText != 'Loading...')
   let lastElement = correctElements[correctElements.length - 1]
   let correctMessage = lastElement.innerText.includes('Correct!');
   console.log('correct', correctMessage)
+  
   // Handles logging and correctness chacking when user submits problem
   logAction(Date.now(), 'Submit clicked', currentProblemID, correctMessage);
   
@@ -93,6 +135,7 @@ const submitHandler = () => {
     userid: userid
   };
 
+  // Sending message to background.js to send trigger
   (async () => {
     const response = await chrome.runtime.sendMessage(data);
     console.log(response);
@@ -100,6 +143,12 @@ const submitHandler = () => {
 
 }
 
+/**
+ * newProblemHandler
+ * 
+ * Callback funtion for when a new porblem is started. Sends message to 
+ * options.js to reset the question prompt.
+ */ 
 const newProblemHandler = (event) => {
   console.log('new problem geldi', currentProblemID)
   buttonText = event.srcElement.textContent
@@ -112,6 +161,7 @@ const newProblemHandler = (event) => {
       userid: userid
     };
 
+    // send message to options.js to reset question prompt
     (async () => {
       const response = await chrome.runtime.sendMessage(data);
       console.log(response);
@@ -119,19 +169,28 @@ const newProblemHandler = (event) => {
   } 
 }
 
-const newProblemCallback = (mutationList, observer) => {
+/**
+ * observerCallback
+ * 
+ * Callback funtion for the mutation observer, runs when the DOM is updated.
+ * Searchs for new problems in the page, and adds event listeners to relevent
+ * elements to send triggers and log actions to csv.
+ */ 
+const observerCallback = (mutationList, observer) => {
   for (const mutation of mutationList) {
     for (const node of mutation.addedNodes){
+      // Search added elements for new problem containers
       if(node.className == 'GOBIPLGDPI') {
         readProblem();
         
+        // Find buttons and inputs for which we want to add event listeners
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
         const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
         const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
         const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
-
         const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
         
+        // Add event listeners to trigger callback functions on click
         currentSubmitButton.addEventListener('click', submitHandler);
         nextProblemButton.addEventListener('click', newProblemHandler);
         if (helpButton.textContent == 'Break this problem into steps'){
@@ -141,7 +200,7 @@ const newProblemCallback = (mutationList, observer) => {
           helpButton.addEventListener('click', helpHandler);
         }
 
-        // catching when users submit with the enter key instead of clicking the submit buttonS
+        // Catching when users submit with the enter key instead of clicking the submit buttons
         inputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
             console.log("breh");
@@ -163,44 +222,10 @@ const timer = setInterval(() => {
     // Tracking HTML DOM changes in the problem set
     const targetNode = nodeSearch[0];
 
+    // Initializing mutation observer which monitors the DOM for changes
     console.log(targetNode);
     const config = {childList: true, subtree: true };
-
-    const observer = new MutationObserver(newProblemCallback);
+    const observer = new MutationObserver(observerCallback);
     observer.observe(targetNode, config);
   }
 }, 150);
-
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(request, sender);
-    if(!sender.tab && 'alert' in request){
-      const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
-
-      let helpPrompt = '';
-      switch(helpButton.textContent){
-        case('Break this problem into steps'):
-          helpPrompt = 'Would you like to break the problem into steps?';
-          break;
-        case('Show hint'):
-          helpPrompt = 'Would you like a hint?';
-          break;
-        case('Show answer'):
-          helpPrompt = 'Would you like to show the answer?'
-          break;
-      }
-
-      if(helpPrompt != '') {
-        if(confirm("It seems like you've been stuck for a while,\n" + helpPrompt)) {
-          helpButton.click();
-          sendResponse({msg: 'help accepted'});
-        } else {
-          sendResponse({msg: 'help declined'});
-        }
-      } else {
-        sendResponse({msg: 'No further help possible'});
-      }
-        
-    }
-  }
-);
