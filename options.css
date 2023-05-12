@@ -3,14 +3,13 @@
   position: relative;
   display: inline-block;
   width: 34px;
-  height: 60px;
+  height: 70px;
 }
 
 /* Hide default HTML checkbox */
 .switch input {
   opacity: 0;
-  width: 0;
-  height: 0;
+  cursor: pointer;
 }
 
 /* The slider */
@@ -26,39 +25,51 @@
   transition: .4s;
 }
 
-.slider:before {
+#sliderCircle {
   position: absolute;
   content: "";
   height: 26px;
   width: 26px;
   left: 4px;
-  bottom: 4px;
+  bottom: 22px;
+  border-radius: 50%;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
 }
 
-input:checked + .slider {
-  background-color: #2196F3;
+#sliderCircle.up {
+  bottom: 40px;
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+#sliderCircle.down {
+  bottom: 4px;
 }
 
-input:checked + .slider:before {
-  -webkit-transform: translateY(-26px);
-  -ms-transform: translateY(-26px);
-  transform: translateY(-26px);
+input[type="radio"] {
+  position: relative;
+  z-index: 10;
+  padding: 10px;
+  margin: 0;
+}
+
+.switch-button {
+  height: 35px;
+  width: 34px;
+}
+
+.bottom {
+  bottom: 28px;
+}
+
+.hidden-switch-button {
+  height: 0;
+  width: 0;
 }
 
 /* Rounded sliders */
 .slider.round {
   border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
 }
 
 .question-container {
@@ -72,6 +83,18 @@ input:checked + .slider:before {
   border-width: 1px;
   padding: 10px;
   box-shadow: 0 1px gray
+}
+
+.toggle {
+  height: 75px;
+}
+
+#toggle-container.up {
+  background-color: blueviolet;
+}
+
+#toggle-container.down {
+  background-color: rgb(234, 222, 56);
 }
 
 .toggle-label {

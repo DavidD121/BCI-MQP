@@ -7,11 +7,13 @@
     <div>
       <h3>Please answer the following as you proceed through the problem</h3>
     </div>
-    <div class="question-container">
-      <label class="switch">
-        <input type="checkbox" id="confidence">
-        <span class="slider round"></span>
-      </label>
+    <div class="question-container toggle">
+      <div id="switch" class="switch">
+        <input type="radio" class="switch-button" name="confidence" id="confident">
+        <input type="radio" class="hidden-switch-button" name="confidence" id="neutral" disabled checked="checked">
+        <input type="radio" class="switch-button bottom" name="confidence" id="notConfident">
+        <span id="toggle-container" class="slider round"><span id="sliderCircle"></span></span>
+      </div>
       <label class="toggle-label">
         <div>I know how to solve this problem</div>
         <div>I do not know how to solve this problem</div>

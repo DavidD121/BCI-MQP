@@ -7,7 +7,7 @@
     "service_worker": "background.js"
   },
   "options_page": "options.html",
-  "permissions": ["storage", "alarms", "activeTab", "scripting"],
+  "permissions": ["storage", "alarms", "activeTab", "tabs", "scripting"],
   "content_scripts": [
     {
       "matches": ["https://*.assistments.org/assistments/student/*"],
