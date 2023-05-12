@@ -6,9 +6,12 @@
  * Also communicates with the node.js server to well as log actions to csv
  */
 
-let currentProblemID = ''
-let usernameBody = ''
-let userid = ''
+let currentProblemID = '';
+let currentInputBox = null;
+let currentSubmitButton = null;
+let currentHelpButton = null;
+let usernameBody = '';
+let userid = '';
 
 /**
  * readProblem
@@ -116,6 +119,7 @@ const helpHandler = (event) => {
  */ 
 const submitHandler = () => {
   console.log('submit geldi', currentProblemID);
+  
   // Checking if correct message is on page after submit
   let elements = Array.from(document.getElementsByClassName('GOBIPLGDJJ'));
   let correctElements = elements.filter(element => element.innerText != 'Loading...')
@@ -170,6 +174,16 @@ const newProblemHandler = (event) => {
 }
 
 /**
+ * inputAlert
+ * 
+ * Callback funtion for input box when the user clicks the it without using the
+ * confidence toggle first
+ */ 
+const inputAlert = () => {
+  alert('Please use the confidence toggle before answering the question');
+}
+
+/**
  * observerCallback
  * 
  * Callback funtion for the mutation observer, runs when the DOM is updated.
@@ -185,29 +199,34 @@ const observerCallback = (mutationList, observer) => {
         
         // Find buttons and inputs for which we want to add event listeners
         const buttons = Array.from(document.getElementsByClassName('GOBIPLGDEL'));
-        const currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
+        currentSubmitButton = buttons.findLast((butt) => (butt.textContent == 'Submit Answer') && !butt.ariaHidden);
         const nextProblemButton = buttons.findLast((butt) => (butt.textContent == 'Next Problem'));
-        const helpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
-        const inputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
+        currentHelpButton = Array.from(document.getElementsByClassName('GOBIPLGDGL')).findLast((butt) => !butt.ariaHidden);
+        currentInputBox = Array.from(document.getElementsByClassName('gwt-TextBox')).pop();
         
         // Add event listeners to trigger callback functions on click
         currentSubmitButton.addEventListener('click', submitHandler);
         nextProblemButton.addEventListener('click', newProblemHandler);
-        if (helpButton.textContent == 'Break this problem into steps'){
-          helpButton.addEventListener('click', newProblemHandler);
+        if (currentHelpButton.textContent == 'Break this problem into steps'){
+          currentHelpButton.addEventListener('click', newProblemHandler);
         }
         else{
-          helpButton.addEventListener('click', helpHandler);
+          currentHelpButton.addEventListener('click', helpHandler);
         }
 
         // Catching when users submit with the enter key instead of clicking the submit buttons
-        inputBox.addEventListener('keypress', function(event) {
+        currentInputBox.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
             console.log("breh");
             event.preventDefault();
             submitHandler();
           }
         });
+
+        // Disable inputs until confidence toggle pressed
+        currentInputBox.disabled = true;
+        currentSubmitButton.disabled = true;
+        currentHelpButton.disabled = true
       }
     }
   }
@@ -229,3 +248,18 @@ const timer = setInterval(() => {
     observer.observe(targetNode, config);
   }
 }, 150);
+
+// Listen for messages
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(request);
+    // Handle confidence toggle message from options page
+    if('toggle' in request && currentInputBox.disabled == true) {
+      console.log('toggle message');
+      currentInputBox.disabled = false;
+      currentSubmitButton.disabled = false;
+      currentHelpButton.disabled = false;
+      sendResponse({response: "thx"})
+    }
+  }
+);

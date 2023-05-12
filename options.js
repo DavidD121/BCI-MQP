@@ -23,7 +23,7 @@ function log(timestamp, action, problemid, userid) {
   request = {
     timestamp: timestamp,
     action: action,
-    confidence: document.getElementById('confidence').checked,
+    confidence: document.getElementById('confident').checked,
     guess: document.getElementById('guess').checked,
     changedMind: document.getElementById('changedMind').checked,
     mathMistake: document.getElementById('mathMistake').checked,
@@ -55,7 +55,12 @@ function log(timestamp, action, problemid, userid) {
  * Resets the follow-up question to its original state 
 */
 function resetQuestion() {
-  document.getElementById('confidence').checked = false;
+  document.getElementById('neutral').checked = true;
+  document.getElementById('toggle-container').classList.remove('up');
+  document.getElementById('toggle-container').classList.remove('down');
+  document.getElementById('sliderCircle').classList.remove('up');
+  document.getElementById('sliderCircle').classList.remove('down');
+
   document.getElementById('guess').checked = false;
   document.getElementById('changedMind').checked = false;
   document.getElementById('mathMistake').checked = false;
@@ -88,9 +93,41 @@ inputs.forEach(element => {
   // Log every instance the buttons are clicked
   element.addEventListener('click', (event) => {
     timestamp = Date.now();
-    action  = event.srcElement.id + " clicked";
+    action  = event.srcElement.id + ' clicked';
     log(timestamp, action, currentProblemID, userid);
   });
+});
+
+/* enableProblemInput
+ *
+ * Sends message to problem page to enable input for problem
+*/
+const enableProblemInput = () => {
+  (async () => {
+    const [tab] = await chrome.tabs.query({title: 'Tutor', url: 'https://*.assistments.org/assistments/student/*'});
+    console.log(tab);
+    const response = await chrome.tabs.sendMessage(tab.id, {toggle: 'clicked'});
+    console.log(response);
+  })();
+}
+
+// Handle slider Animations
+document.getElementById("confident").addEventListener('click', () => {
+  console.log('confident clicked');
+  enableProblemInput();
+  document.getElementById('sliderCircle').classList.remove('down');
+  document.getElementById('sliderCircle').classList.add('up');
+  document.getElementById('toggle-container').classList.remove('down');
+  document.getElementById('toggle-container').classList.add('up');
+});
+
+document.getElementById("notConfident").addEventListener('click', () => {
+  console.log('not confident clicked');
+  enableProblemInput();
+  document.getElementById('sliderCircle').classList.remove('up');
+  document.getElementById('sliderCircle').classList.add('down');
+  document.getElementById('toggle-container').classList.remove('up');
+  document.getElementById('toggle-container').classList.add('down');
 });
 
 // Hiding/showing other checkbox
@@ -117,7 +154,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendReponse) => {
     sendReponse({msg: "reset follow-up question"})
   } else if (msg.type == 'incorrect') {
     // Show expanded prompt when the user gets a problem wrong with confidence checked
-    if(document.getElementById('confidence').checked) {
+    if(document.getElementById('confident').checked) {
       timestamp = Date.now();
       setIncorrectPromptVisibility(true);
       log(timestamp, 'Incorrect Guess with confidence checked', currentProblemID, userid);
