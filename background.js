@@ -66,7 +66,7 @@ function sendHintAlert() {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name == 'getData') {
     console.log('fetching');
-    fetch('http://127.0.0.1:5000/GetRLState').then((res) => {
+    fetch('http://127.0.0.1:5000/GetProcessedData').then((res) => {
       if(res.ok) {
         return res.json();
       }
